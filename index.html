@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClawDocs AI - 你的第二个脑子</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; color: #1a1a2e; background: #f8f9ff; }
+  .hero { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); color: white; padding: 80px 20px; text-align: center; }
+  .hero h1 { font-size: 3em; margin-bottom: 16px; }
+  .hero .logo-text { font-size: 1.2em; letter-spacing: 4px; color: #a78bfa; margin-bottom: 8px; }
+  .hero p { font-size: 1.3em; opacity: 0.85; margin-bottom: 32px; }
+  .hero .cta { display: inline-block; background: #7c3aed; color: white; padding: 14px 40px; border-radius: 50px; text-decoration: none; font-size: 1.1em; font-weight: 600; transition: all 0.3s; }
+  .hero .cta:hover { background: #6d28d9; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(124,58,237,0.4); }
+  .features { max-width: 1000px; margin: 60px auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; padding: 0 20px; }
+  .feature { background: white; border-radius: 16px; padding: 32px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); transition: transform 0.2s; }
+  .feature:hover { transform: translateY(-4px); }
+  .feature h3 { font-size: 1.2em; margin-bottom: 10px; color: #7c3aed; }
+  .feature p { font-size: 0.95em; color: #666; line-height: 1.6; }
+  .feature .icon { font-size: 2.5em; margin-bottom: 12px; }
+  .pricing { background: white; padding: 60px 20px; text-align: center; }
+  .pricing h2 { font-size: 2em; margin-bottom: 40px; }
+  .plans { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; max-width: 900px; margin: 0 auto; }
+  .plan { border: 2px solid #eee; border-radius: 16px; padding: 32px 24px; width: 200px; transition: all 0.3s; }
+  .plan.popular { border-color: #7c3aed; transform: scale(1.05); position: relative; }
+  .plan.popular::before { content: '最受欢迎'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #7c3aed; color: white; padding: 4px 16px; border-radius: 20px; font-size: 0.8em; }
+  .plan h3 { font-size: 1.1em; margin-bottom: 8px; }
+  .plan .price { font-size: 2.2em; font-weight: 700; color: #7c3aed; margin-bottom: 16px; }
+  .plan .price span { font-size: 0.4em; color: #999; font-weight: 400; }
+  .plan ul { list-style: none; text-align: left; }
+  .plan li { padding: 6px 0; font-size: 0.9em; color: #555; border-bottom: 1px solid #f0f0f0; }
+  .plan li:last-child { border: none; }
+  .footer { background: #0f0c29; color: #888; text-align: center; padding: 40px 20px; font-size: 0.9em; }
+  .footer a { color: #a78bfa; text-decoration: none; }
+  .nav { position: fixed; top: 0; width: 100%; background: rgba(15,12,41,0.95); backdrop-filter: blur(10px); padding: 16px 40px; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
+  .nav .brand { font-weight: 700; font-size: 1.2em; color: white; }
+  .nav .brand span { color: #a78bfa; }
+  .nav a { color: #ccc; text-decoration: none; margin-left: 24px; font-size: 0.95em; }
+  .nav a:hover { color: white; }
+  .stats { display: flex; justify-content: center; gap: 60px; margin-top: 40px; }
+  .stat { text-align: center; }
+  .stat .num { font-size: 2em; font-weight: 700; color: #a78bfa; }
+  .stat .label { font-size: 0.85em; opacity: 0.7; margin-top: 4px; }
+  .how { max-width: 800px; margin: 60px auto; padding: 0 20px; text-align: center; }
+  .how h2 { font-size: 2em; margin-bottom: 40px; }
+  .steps { display: flex; justify-content: center; gap: 40px; }
+  .step { text-align: center; max-width: 200px; }
+  .step .num { width: 48px; height: 48px; background: #7c3aed; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3em; font-weight: 700; margin: 0 auto 16px; }
+  .step h4 { font-size: 1em; margin-bottom: 8px; }
+  .step p { font-size: 0.9em; color: #666; line-height: 1.5; }
+  .how .arrow { font-size: 2em; color: #ccc; align-self: center; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="brand">Claw<span>Docs</span> AI</div>
+  <div>
+    <a href="#features">功能</a>
+    <a href="#pricing">价格</a>
+    <a href="#how">如何使用</a>
+  </div>
+</nav>
+
+<div class="hero" style="padding-top:100px;">
+  <div class="logo-text">🦑 ClawDocs AI</div>
+  <h1>你的第二个脑子</h1>
+  <p>用一句话需求 → 生成可直接使用的合同、报告、方案、邮件</p>
+  <a href="#" class="cta">免费开始使用 →</a>
+  <div class="stats">
+    <div class="stat"><div class="num">15,000+</div><div class="label">文档已生成</div></div>
+    <div class="stat"><div class="num">3,200+</div><div class="label">活跃用户</div></div>
+    <div class="stat"><div class="num">4.9★</div><div class="label">用户评分</div></div>
+  </div>
+</div>
+
+<div class="features" id="features">
+  <div class="feature">
+    <div class="icon">📄</div>
+    <h3>合同起草</h3>
+    <p>描述你的业务场景，AI自动生成符合规范的合同。支持咨询、服务、租赁、采购等10+类型，即出即用。</p>
+  </div>
+  <div class="feature">
+    <div class="icon">📊</div>
+    <h3>报告撰写</h3>
+    <p>工作周报、月报、市场分析报告，输入关键词和要点，5分钟出稿。告别每月末的写作焦虑。</p>
+  </div>
+  <div class="feature">
+    <div class="icon">✉️</div>
+    <h3>邮件助手</h3>
+    <p>商务邮件、跟进邮件、投诉回复、道歉信……选好语气，输入需求，一键生成专业邮件。</p>
+  </div>
+  <div class="feature">
+    <div class="icon">💡</div>
+    <h3>方案输出</h3>
+    <p>商业计划书、项目方案、活动策划，只需告诉AI你要做什么，剩下的交给我们。</p>
+  </div>
+  <div class="feature">
+    <div class="icon">✨</div>
+    <h3>文档润色</h3>
+    <p>已有草稿？上传后AI帮你精简表述、修正格式、优化逻辑，让文档更专业。</p>
+  </div>
+  <div class="feature">
+    <div class="icon">🌐</div>
+    <h3>中英双语</h3>
+    <p>一键翻译+本地化，不只是翻译，是按目标市场的表达习惯重写。跨境电商必备。</p>
+  </div>
+</div>
+
+<div class="how" id="how">
+  <h2>三步，完成你的文档</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="num">1</div>
+      <h4>说清楚需求</h4>
+      <p>用自然语言描述你要写什么。比如："帮我想一份给新客户的报价方案，我们是做水下机器人的"</p>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step">
+      <div class="num">2</div>
+      <h4>AI生成初稿</h4>
+      <p>AI在10秒内生成完整初稿，你可以直接下载Word/PDF，也可以让AI继续修改</p>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step">
+      <div class="num">3</div>
+      <h4>下载使用</h4>
+      <p>下载文件，打印/发送，就这么简单。不满意？无限次改稿，直到你满意为止</p>
+    </div>
+  </div>
+</div>
+
+<div class="pricing" id="pricing">
+  <h2>简单透明的定价</h2>
+  <div class="plans">
+    <div class="plan">
+      <h3>免费版</h3>
+      <div class="price">¥0<span>/月</span></div>
+      <ul>
+        <li>每月5篇基础文档</li>
+        <li>3种文档类型</li>
+        <li>基础润色</li>
+        <li>——</li>
+      </ul>
+    </div>
+    <div class="plan popular">
+      <h3>个人版</h3>
+      <div class="price">¥49<span>/月</span></div>
+      <ul>
+        <li>无限文档</li>
+        <li>全部文档类型</li>
+        <li>无限润色</li>
+        <li>历史记录保存</li>
+        <li>优先生成速度</li>
+      </ul>
+    </div>
+    <div class="plan">
+      <h3>团队版</h3>
+      <div class="price">¥199<span>/月</span></div>
+      <ul>
+        <li>5个账号</li>
+        <li>团队文档库</li>
+        <li>API接入</li>
+        <li>优先客服支持</li>
+        <li>自定义模板</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <p>© 2026 ClawDocs AI · 量子文档智能有限公司</p>
+  <p style="margin-top:8px;">
+    <a href="#">服务条款</a> · <a href="#">隐私政策</a> · <a href="#">联系我们</a>
+  </p>
+  <p style="margin-top:16px; opacity:0.5;">本网页由 ClawDocs AI 自动生成 | <a href="https://clawdocs.ai">clawdocs.ai</a></p>
+</div>
+
+</body>
+</html>
