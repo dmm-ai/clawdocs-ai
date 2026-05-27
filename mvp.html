@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClawDocs AI - 文档工厂</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f3ff; color: #1a1a2e; min-height: 100vh; }
+
+  /* 顶部导航 */
+  .topbar { background: linear-gradient(135deg, #1a1040, #2d1b69); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(0,0,0,0.2); }
+  .topbar .brand { font-size: 1.2em; font-weight: 700; color: white; }
+  .topbar .brand span { color: #c4b5fd; }
+  .topbar .badge { background: #7c3aed; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75em; }
+  .topbar .version { color: #6b7280; font-size: 0.85em; }
+
+  /* 容器 */
+  .container { max-width: 900px; margin: 0 auto; padding: 32px 20px; }
+
+  /* Hero */
+  .hero { text-align: center; margin-bottom: 40px; }
+  .hero h1 { font-size: 2.2em; font-weight: 800; margin-bottom: 12px; background: linear-gradient(135deg, #7c3aed, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero p { color: #6b7280; font-size: 1.05em; }
+
+  /* 文档类型选择 */
+  .doc-types { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; justify-content: center; }
+  .doc-type { padding: 10px 20px; border-radius: 25px; border: 2px solid #ddd; background: white; cursor: pointer; font-size: 0.95em; transition: all 0.2s; color: #555; font-weight: 500; }
+  .doc-type:hover { border-color: #a78bfa; color: #7c3aed; }
+  .doc-type.active { border-color: #7c3aed; background: #7c3aed; color: white; }
+
+  /* 输入区 */
+  .input-section { background: white; border-radius: 20px; padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); margin-bottom: 24px; }
+  .input-section label { font-weight: 600; font-size: 0.95em; color: #374151; margin-bottom: 10px; display: block; }
+  .input-section textarea { width: 100%; border: 2px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 1em; font-family: inherit; resize: vertical; min-height: 120px; transition: border 0.2s; outline: none; line-height: 1.6; }
+  .input-section textarea:focus { border-color: #7c3aed; }
+  .input-section textarea::placeholder { color: #9ca3af; }
+
+  /* 示例按钮 */
+  .examples { margin-top: 12px; }
+  .examples span { font-size: 0.8em; color: #9ca3af; margin-right: 8px; }
+  .examples button { background: none; border: none; color: #7c3aed; font-size: 0.82em; cursor: pointer; padding: 4px 10px; border-radius: 6px; text-decoration: underline; margin: 2px; }
+  .examples button:hover { background: #f5f3ff; }
+
+  /* 生成按钮 */
+  .generate-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; border: none; border-radius: 14px; font-size: 1.1em; font-weight: 700; cursor: pointer; transition: all 0.3s; margin-bottom: 12px; }
+  .generate-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(124,58,237,0.4); }
+  .generate-btn:active { transform: translateY(0); }
+  .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* 提示信息 */
+  .tip { text-align: center; font-size: 0.82em; color: #9ca3af; margin-bottom: 24px; }
+
+  /* 输出区 */
+  .output-section { background: white; border-radius: 20px; padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); display: none; }
+  .output-section.show { display: block; }
+  .output-section .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #f0f0f0; }
+  .output-section .output-title { font-weight: 700; font-size: 1em; color: #374151; }
+  .output-section .doc-type-label { background: #f5f3ff; color: #7c3aed; padding: 4px 12px; border-radius: 20px; font-size: 0.82em; font-weight: 600; }
+  .output-section pre { white-space: pre-wrap; word-wrap: break-word; font-family: inherit; font-size: 0.95em; line-height: 1.8; color: #374151; max-height: 500px; overflow-y: auto; padding-right: 10px; }
+  .output-section pre::-webkit-scrollbar { width: 4px; }
+  .output-section pre::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
+  /* 操作按钮 */
+  .actions { display: flex; gap: 10px; margin-top: 20px; padding-top: 16px; border-top: 1px solid #f0f0f0; }
+  .actions button { flex: 1; padding: 12px; border-radius: 10px; font-size: 0.95em; font-weight: 600; cursor: pointer; transition: all 0.2s; border: 2px solid #e5e7eb; background: white; color: #555; }
+  .actions button:hover { border-color: #7c3aed; color: #7c3aed; }
+  .actions button.primary { background: #7c3aed; color: white; border-color: #7c3aed; }
+  .actions button.primary:hover { background: #6d28d9; }
+
+  /* 加载动画 */
+  .loading { display: none; text-align: center; padding: 40px; }
+  .loading.show { display: block; }
+  .spinner { width: 40px; height: 40px; border: 4px solid #e5e7eb; border-top: 4px solid #7c3aed; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading p { color: #9ca3af; font-size: 0.9em; }
+
+  /* 免责声明 */
+  .disclaimer { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 12px; padding: 14px 18px; margin-top: 24px; font-size: 0.82em; color: #92400e; line-height: 1.6; }
+  .disclaimer strong { display: block; margin-bottom: 4px; }
+
+  /* 底部 */
+  .footer { text-align: center; padding: 40px 20px; color: #9ca3af; font-size: 0.85em; }
+  .footer a { color: #7c3aed; text-decoration: none; }
+
+  /* 成功提示 */
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #1a1a2e; color: white; padding: 12px 24px; border-radius: 30px; font-size: 0.9em; opacity: 0; transition: all 0.3s; z-index: 200; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">🦑 Claw<span>Docs</span> AI</div>
+  <div>
+    <span class="badge">v1.0 MVP</span>
+    <span class="version"> · 本地预览版</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="hero">
+    <h1>你的第二个脑子</h1>
+    <p>输入一句话需求，自动生成合同、报告、方案、邮件</p>
+  </div>
+
+  <!-- 文档类型选择 -->
+  <div class="doc-types">
+    <button class="doc-type active" data-type="contract" onclick="selectType(this)">📄 合同起草</button>
+    <button class="doc-type" data-type="report" onclick="selectType(this)">📊 报告撰写</button>
+    <button class="doc-type" data-type="email" onclick="selectType(this)">✉️ 邮件助手</button>
+    <button class="doc-type" data-type="proposal" onclick="selectType(this)">💡 方案输出</button>
+    <button class="doc-type" data-type="polish" onclick="selectType(this)">✨ 文档润色</button>
+  </div>
+
+  <!-- 输入区 -->
+  <div class="input-section">
+    <label for="userInput">📝 描述你的需求</label>
+    <textarea id="userInput" placeholder="用大白话说你要写什么，越详细生成越准确……
+
+例如：帮我想一份和客户的咨询服务合同，我是做市场调研的，费用3万，分三期付款，首付30%"
+    ></textarea>
+    <div class="examples">
+      <span>试试这些：</span>
+      <button onclick="fillExample('contract')">咨询服务合同</button>
+      <button onclick="fillExample('report')">月度工作汇报</button>
+      <button onclick="fillExample('email')">客户跟进邮件</button>
+      <button onclick="fillExample('proposal')">商业合作方案</button>
+    </div>
+  </div>
+
+  <button class="generate-btn" id="generateBtn" onclick="generate()">
+    ⚡ 开始生成
+  </button>
+
+  <div class="tip">⚠️ 本地为预览模式 · AI生成功能需联网使用</div>
+
+  <!-- 加载 -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>AI 正在生成中，请稍候……</p>
+  </div>
+
+  <!-- 输出区 -->
+  <div class="output-section" id="outputSection">
+    <div class="header">
+      <div class="output-title">📋 生成结果</div>
+      <div class="doc-type-label" id="docTypeLabel">合同</div>
+    </div>
+    <pre id="outputContent">（生成内容将显示在这里）</pre>
+    <div class="actions">
+      <button onclick="copyText()">📋 复制内容</button>
+      <button class="primary" onclick="downloadWord()">📥 下载Word</button>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <strong>⚠️ 免责声明</strong>
+    本工具生成的文档仅供参考，不能替代专业法律意见。正式签署前，请务必由具备相关资质的法律专业人士审核确认。因使用本工具生成的文档产生的一切法律后果，用户自行承担。
+  </div>
+
+</div>
+
+<div class="footer">
+  ClawDocs AI · 量子文档智能有限公司 · 2026<br>
+  <a href="#">官网</a> · <a href="#">服务条款</a> · <a href="#">联系我们</a>
+</div>
+
+<div class="toast" id="toast">已复制到剪贴板 ✓</div>
+
+<script>
+let selectedDocType = 'contract';
+const docTypeLabels = {
+  contract: '合同',
+  report: '报告',
+  email: '邮件',
+  proposal: '方案',
+  polish: '润色'
+};
+
+// 示例填充
+function fillExample(type) {
+  const examples = {
+    contract: '帮我想一份和客户的咨询服务合同，我是做市场调研的，费用3万，分三期付款，首付30%',
+    report: '帮我写一份月度工作汇报，我是做产品运营的，主要负责用户增长，本月新增用户5000人，DAU提升15%',
+    email: '写一封给客户的项目进度汇报邮件，说明开发进度正常，预计下周完成测试',
+    proposal: '帮我想一份给客户的水下机器人采购方案，我们是制造商，预算50万以内，要求续航8小时以上'
+  };
+  document.getElementById('userInput').value = examples[type];
+  document.getElementById('userInput').focus();
+}
+
+// 类型选择
+function selectType(btn) {
+  document.querySelectorAll('.doc-type').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedDocType = btn.dataset.type;
+}
+
+// 生成
+function generate() {
+  const input = document.getElementById('userInput').value.trim();
+  if (!input) {
+    alert('请先输入需求描述');
+    return;
+  }
+
+  const btn = document.getElementById('generateBtn');
+  const loading = document.getElementById('loading');
+  const output = document.getElementById('outputSection');
+
+  btn.disabled = true;
+  btn.textContent = '⏳ 生成中...';
+  loading.classList.add('show');
+  output.classList.remove('show');
+
+  // 模拟AI生成延迟
+  setTimeout(() => {
+    const content = buildDocument(selectedDocType, input);
+    document.getElementById('outputContent').textContent = content;
+    document.getElementById('docTypeLabel').textContent = docTypeLabels[selectedDocType];
+    loading.classList.remove('show');
+    output.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = '⚡ 重新生成';
+    output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 2000);
+}
+
+// 复制
+function copyText() {
+  const text = document.getElementById('outputContent').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+  });
+}
+
+// 下载Word
+function downloadWord() {
+  const content = document.getElementById('outputContent').textContent;
+  const type = selectedDocType;
+  const typeName = docTypeLabels[type];
+  const date = new Date().toLocaleDateString('zh-CN');
+
+  // 简单HTML转Word
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:w="urn:schemas-microsoft-com:office:word"
+xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><title>${typeName}</title>
+<style>body{font-family:SimSun;font-size:14pt;line-height:1.8;padding:40px 60px;}
+h1{font-size:18pt;text-align:center;margin-bottom:20px;}
+h2{font-size:14pt;margin-top:24px;font-weight:bold;}
+p{margin:8px 0;text-indent:2em;}
+.bl{font-weight:bold;}
+.disclaimer{font-size:10pt;color:#888;margin-top:40px;border-top:1px solid #ddd;padding-top:16px;}
+</style></head>
+<body>
+<h1>${getDocTitle(type, content)}</h1>
+${formatContentForWord(content)}
+<div class="disclaimer">⚠️ 本文档由 ClawDocs AI 自动生成，仅供参考，正式签署前请咨询专业法律人士。</div>
+</body></html>`;
+
+  const blob = new Blob([html], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ClawDocs_${typeName}_${new Date().toISOString().slice(0,10)}.doc`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// 生成文档标题
+function getDocTitle(type, content) {
+  const titles = {
+    contract: '咨询服务合同',
+    report: '月度工作汇报',
+    email: '商务邮件',
+    proposal: '商业合作方案',
+    polish: '润色文档'
+  };
+  return titles[type] || '文档';
+}
+
+// 格式化内容为Word HTML
+function formatContentForWord(text) {
+  const lines = text.split('\n');
+  let html = '';
+  let inList = false;
+  for (let line of lines) {
+    line = line.trim();
+    if (!line) { html += '<p></p>'; continue; }
+    if (/^[一二三四五六七八九十]、/.test(line)) {
+      if (inList) html += '</p>';
+      html += `<h2>${line}</h2>`;
+      inList = false;
+    } else if (/^\d+[．.)]/.test(line)) {
+      if (!inList) { html += '<p>'; inList = true; }
+      html += `<span style="margin-left:2em;">${line}</span><br>`;
+    } else if (line.startsWith('•') || line.startsWith('-') || line.startsWith('·')) {
+      if (!inList) { html += '<p>'; inList = true; }
+      html += `<span style="margin-left:2em;">${line}</span><br>`;
+    } else {
+      if (inList) { html += '</p>'; inList = false; }
+      html += `<p>${line}</p>`;
+    }
+  }
+  if (inList) html += '</p>';
+  return html;
+}
+
+// 文档生成逻辑
+function buildDocument(type, input) {
+  const date = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  if (type === 'contract') return buildContract(input, date);
+  if (type === 'report') return buildReport(input, date);
+  if (type === 'email') return buildEmail(input);
+  if (type === 'proposal') return buildProposal(input, date);
+  if (type === 'polish') return buildPolish(input, date);
+}
+
+// 合同生成
+function buildContract(input, date) {
+  const parties = extractParties(input);
+  return `咨询服务合同
+
+合同编号：ZW-${new Date().getFullYear()}-${String(Math.floor(Math.random()*9000)+1000)}
+
+甲方（委托方）：${parties.partyA || '___公司'}
+乙方（受托方）：${parties.partyB || '___公司/个人'}
+
+签订日期：${date}
+签订地点：__________
+
+─────────────────────────────────────
+
+鉴于条款
+
+一、甲方委托乙方提供咨询服务，乙方具备相关服务资质与能力；
+二、甲乙双方本着平等、自愿、公平、诚实信用的原则，经协商一致，订立本合同；
+三、本合同受中华人民共和国法律管辖和保护；
+四、本合同一式两份，甲乙双方各执一份，具有同等法律效力。
+
+─────────────────────────────────────
+
+第一条 服务内容
+
+乙方为甲方提供以下咨询服务（包括但不限于）：
+（一）${extractService(input)}
+（二）相关延伸咨询服务（按甲方实际需求执行）
+
+具体服务范围以双方书面确认为准。
+
+─────────────────────────────────────
+
+第二条 服务期限
+
+本合同服务期限为 ____ 个月，自合同签署之日起计算。
+如需延期，双方应提前15日协商并签订书面补充协议。
+
+─────────────────────────────────────
+
+第三条 费用及付款方式
+
+一、本合同总费用为：人民币（大写）____________元整（¥__________.00）
+二、付款方式：
+   1. 首付款：合同签署后5个工作日内，支付总金额的30%
+   2. 中期款：服务进度达50%后5个工作日内，支付总金额的30%
+   3. 尾款：服务完成验收合格后5个工作日内，支付总金额的40%
+三、收款账户信息由乙方另行书面提供。
+
+─────────────────────────────────────
+
+第四条 双方权利与义务
+
+甲方权利与义务：
+（一）有权对乙方服务质量进行监督和评价；
+（二）应按合同约定按时足额支付服务费用；
+（三）应向乙方提供开展服务所需的必要资料和信息；
+（四）应指定专人配合乙方工作，及时反馈意见。
+
+乙方权利与义务：
+（一）有权按合同约定收取服务费用；
+（二）应按时、按质完成约定的咨询服务；
+（三）应对甲方提供的信息资料予以保密，未经书面许可不得对外披露；
+（四）应定期向甲方汇报工作进展（每月不少于一次）。
+
+─────────────────────────────────────
+
+第五条 知识产权与保密
+
+一、乙方为甲方工作产生的成果，其知识产权归甲方所有。
+二、双方对合作过程中知悉的商业秘密，负有保密义务，保密期限为合同终止后三年。
+三、违反保密义务的一方，应赔偿对方因此遭受的直接损失。
+
+─────────────────────────────────────
+
+第六条 验收标准
+
+一、服务成果完成后，乙方应向甲方提交书面交付物；
+二、甲方应在收到交付物后10个工作日内完成验收；
+三、如甲方提出修改意见，乙方应在5个工作日内完成调整；
+四、逾期未提出异议视为验收合格。
+
+─────────────────────────────────────
+
+第七条 违约责任
+
+一、甲方逾期付款的，每逾期一日，按应付款项的0.05%向乙方支付违约金；
+二、乙方逾期交付的，每逾期一日，按合同总金额的0.05%向甲方支付违约金；
+三、任何一方严重违约，守约方有权解除合同并要求赔偿全部损失；
+四、因不可抗力导致合同无法履行的，双方互不承担责任，但应及时通知对方。
+
+─────────────────────────────────────
+
+第八条 争议解决
+
+本合同履行过程中发生的争议，双方应首先友好协商解决；协商不成的，提交合同签订地有管辖权的人民法院诉讼解决。
+
+─────────────────────────────────────
+
+第九条 其他约定
+
+一、本合同经双方签字（盖章）后生效；
+二、本合同未尽事宜，双方可另行签订书面补充协议，补充协议与本合同具有同等法律效力；
+三、本合同一式两份，甲乙双方各执一份。
+
+─────────────────────────────────────
+
+甲方（签章）：____________________    乙方（签章）：____________________
+
+授权代表：____________________        授权代表：____________________
+
+日期：____________________            日期：____________________`;
+}
+
+// 报告生成
+function buildReport(input, date) {
+  const reportType = input.includes('月度') ? '月度' : input.includes('季度') ? '季度' : '年度';
+  const dept = extractDept(input);
+  return `${reportType}工作汇报
+
+汇报部门：${dept}
+汇报日期：${date}
+汇报人：__________
+
+─────────────────────────────────────
+
+一、本期工作概述
+
+本期内，本部门围绕公司年度目标，重点推进以下工作：
+
+（一）主要工作完成情况
+${extractWork(input)}
+
+（二）关键指标达成情况
+• 目标指标：__________
+• 实际完成：__________
+• 完成率：____%
+
+（三）重点项目进展
+| 项目名称 | 计划进度 | 实际进度 | 状态 |
+|---------|---------|---------|------|
+| 项目一  |   100%  |   ___%  | 正常/滞后|
+| 项目二  |   100%  |   ___%  | 正常/滞后|
+| 项目三  |   100%  |   ___%  | 正常/滞后|
+
+─────────────────────────────────────
+
+二、本期工作亮点
+
+1. ____________________（取得了XX成果，为公司带来XX价值）
+2. ____________________
+3. ____________________
+
+─────────────────────────────────────
+
+三、问题与挑战
+
+（一）遇到的主要问题
+• 问题一：____________________（原因分析：__________）
+• 问题二：____________________（原因分析：__________）
+
+（二）已采取的应对措施
+• 措施一：____________________
+• 措施二：____________________
+
+─────────────────────────────────────
+
+四、下期工作计划
+
+（一）重点任务
+1. ____________________（目标：__________，截止日期：__________）
+2. ____________________（目标：__________，截止日期：__________）
+3. ____________________（目标：__________，截止日期：__________）
+
+（二）资源需求
+• 人力需求：__________
+• 预算需求：__________
+• 技术支持：__________
+
+（三）风险预判
+• 风险一：____________________（应对方案：__________）
+• 风险二：____________________（应对方案：__________）
+
+─────────────────────────────────────
+
+五、意见与建议
+
+1. ____________________
+2. ____________________
+
+─────────────────────────────────────
+
+汇报人：____________________    日期：____________________`;
+}
+
+// 邮件生成
+function buildEmail(input) {
+  const tone = input.includes('投诉') || input.includes('道歉') ? '道歉' :
+               input.includes('跟进') ? '跟进' :
+               input.includes('报价') ? '报价' : '商务';
+  const tones = {
+    跟进: { subject: '项目进度跟进', greeting: '尊敬的王总/李总', sign: '张明' },
+    道歉: { subject: '关于XX事宜的致歉', greeting: '尊敬的客户', sign: '___' },
+    报价: { subject: '报价方案', greeting: '尊敬的王总', sign: '___' },
+    商务: { subject: '合作事宜沟通', greeting: '尊敬的张总', sign: '___' }
+  };
+  const t = tones[tone];
+  return `主题：${t.subject}
+
+${t.greeting}：
+
+您好！
+
+${tone === '跟进' ? '非常感谢您此前对我们产品的关注与支持。我是____公司的____，负责本次项目对接。\n\n近期我们的项目进展顺利，目前已完成____阶段，计划于____前进入下一阶段。在此向您汇报一下最新进展：\n\n• ____已完成\n• ____正在进行中\n• 预计____时间交付\n\n如有疑问或需要进一步沟通，欢迎随时联系我。期待与您携手推进项目，达成预期目标。' : ''}
+
+${tone === '道歉' ? '对于本次给您带来的不便，我们深表歉意。\n\n情况说明：____\n原因分析：____\n我们的改进措施：____\n\n我们会认真反思本次问题，全面完善服务流程，避免类似情况再次发生。再次感谢您的理解与支持。' : ''}
+
+${tone === '报价' ? '感谢您的询价，以下是我们的报价方案，供您参考：\n\n一、报价明细\n• 产品/服务名称：____\n• 单价：____元\n• 数量：____\n• 总价：____元\n\n二、报价有效期\n本报价有效期为30天，自发送之日起计算。\n\n三、付款方式\n• 预付款：____%\n• 尾款：____%\n\n如有任何疑问，欢迎随时沟通。期待与您合作！' : ''}
+
+${tone === '商务' ? '您好！\n\n非常荣幸有机会与贵司就合作事宜进行沟通。\n\n我司____（公司名称）专注于____领域，拥有____年的行业经验。希望能够与贵司探讨合作可能，共创价值。\n\n如方便，我们可以安排一次电话或面谈，深入交流合作方案。期待您的回复！' : ''}
+
+此致
+敬礼
+
+${t.sign}
+____公司
+联系方式：____
+日期：${new Date().toLocaleDateString('zh-CN')} `;
+}
+
+// 方案生成
+function buildProposal(input, date) {
+  return `商业合作方案
+
+方案编号：CLAW-${new Date().getFullYear()}-____
+编制日期：${date}
+编制人：____公司
+
+─────────────────────────────────────
+
+一、合作背景
+
+${input}
+
+─────────────────────────────────────
+
+二、合作目标
+
+（一）短期目标（1-3个月）
+• 目标一：____
+• 目标二：____
+
+（二）中期目标（3-6个月）
+• 目标一：____
+• 目标二：____
+
+（三）长期目标（6个月以上）
+• 目标一：____
+• 目标二：____
+
+─────────────────────────────────────
+
+三、我方优势
+
+（一）资源优势
+• ____
+• ____
+
+（二）技术优势
+• ____
+• ____
+
+（三）服务优势
+• ____
+• ____
+
+─────────────────────────────────────
+
+四、合作模式
+
+（一）合作形式
+• 模式一：____
+• 模式二：____
+
+（二）双方分工
+甲方：____
+乙方（我方）：____
+
+（三）合作周期
+____年/____年
+
+─────────────────────────────────────
+
+五、方案报价
+
+| 项目 | 内容 | 周期 | 价格（元） |
+|------|------|------|-----------|
+| 基础服务 | ____ | ____ | ____ |
+| 增值服务 | ____ | ____ | ____ |
+| 定制服务 | ____ | ____ | ____ |
+| **合计** | — | — | **____** |
+
+─────────────────────────────────────
+
+六、实施计划
+
+| 阶段 | 时间 | 主要内容 | 交付物 |
+|------|------|----------|--------|
+| 调研阶段 | 第1-2周 | ____ | 调研报告 |
+| 方案设计 | 第3-4周 | ____ | 详细方案 |
+| 实施执行 | 第5-__周 | ____ | 过程报告 |
+| 验收交付 | 最后1周 | ____ | 验收报告 |
+
+─────────────────────────────────────
+
+七、风险与保障
+
+（一）可能风险
+• 风险一：____（预案：____）
+• 风险二：____（预案：____）
+
+（二）服务保障
+• 质量保证：____
+• 售后服务：____
+• 保密承诺：____
+
+─────────────────────────────────────
+
+八、联系方式
+
+联系人：____
+联系电话：____
+邮箱：____
+地址：____
+
+─────────────────────────────────────
+
+我们期待与贵司携手，共创价值！`;
+}
+
+// 润色生成
+function buildPolish(input, date) {
+  return `润色后的文档
+
+─────────────────────────────────────
+
+原文：
+${input}
+
+─────────────────────────────────────
+
+润色版本（精简、专业）：
+
+（AI将根据原文进行以下优化：
+✓ 删除冗余表述
+✓ 修正语法和用词
+✓ 优化段落逻辑结构
+✓ 统一文档风格
+✓ 使表达更简洁有力）
+
+─────────────────────────────────────
+
+润色说明：
+• 删除了____处冗余表述
+• 修正了____处表达不清的内容
+• 调整了段落逻辑顺序，使行文更流畅
+• 整体篇幅精简约____%
+
+─────────────────────────────────────
+
+⚠️ 润色结果仅供参考，请根据实际情况调整。`;
+}
+
+// 提取关键信息
+function extractParties(input) {
+  // 简单关键词匹配
+  const partyAMatch = input.match(/甲方[：:]\s*(\S+)/);
+  const partyBMatch = input.match(/乙方[：:]\s*(\S+)/);
+  return {
+    partyA: partyAMatch ? partyAMatch[1] : null,
+    partyB: partyBMatch ? partyBMatch[1] : null
+  };
+}
+
+function extractService(input) {
+  // 提取服务类型
+  if (input.includes('市场调研')) return '市场调研与数据分析服务，包括行业研究、竞品分析、市场趋势研究等';
+  if (input.includes('技术')) return '技术服务与开发支持，包括系统设计、技术方案、技术文档编制等';
+  if (input.includes('咨询')) return '企业战略与管理咨询服务，包括业务诊断、方案设计、落地执行支持等';
+  if (input.includes('培训')) return '专业培训服务，包括技能培训、管理培训、定制课程开发等';
+  return '与甲方业务相关的专业咨询与顾问服务';
+}
+
+function extractDept(input) {
+  if (input.includes('运营')) return '运营部';
+  if (input.includes('销售')) return '销售部';
+  if (input.includes('技术')) return '技术部';
+  if (input.includes('产品')) return '产品部';
+  if (input.includes('市场')) return '市场部';
+  if (input.includes('财务')) return '财务部';
+  if (input.includes('人力')) return '人力资源部';
+  return '____部';
+}
+
+function extractWork(input) {
+  if (input.includes('用户增长') || input.includes('增长')) {
+    return '• 用户增长专项工作：新增用户____人，超额完成目标____%\n• DAU（日活跃用户）提升____%，达到____人\n• 用户留存率提升____个百分点';
+  }
+  if (input.includes('销售') || input.includes('营收')) {
+    return '• 销售额达成____万元，完成率____%\n• 新增客户____家，续约率____%\n• 重点客户项目进展顺利';
+  }
+  return '• 常规工作按计划推进\n• 重点项目取得阶段性成果\n• 跨部门协作顺畅';
+}
+</script>
+</body>
+</html>
