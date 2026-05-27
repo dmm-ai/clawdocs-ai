@@ -278,7 +278,7 @@
 
 <div class="footer">
   <div class="company">🦑 ClawDocs AI · 量子文档智能有限公司</div>
-  © 2026 ClawDocs AI · <a href="https://clawdocs-ai.netlify.app" target="_blank">官网</a> · 服务条款 · 联系我们
+  © 2026 ClawDocs AI · <a href="https://admirable-mermaid-91c0a1.netlify.app" target="_blank">官网</a> · 服务条款 · 联系我们
 </div>
 
 <div class="toast" id="toast">
@@ -608,7 +608,7 @@ function formatContentForWord(text) {
     }
     // 表格行
     if (line.includes('│') || line.includes('|')) {
-      if (!inTable && line.includes('──') || line.includes('--')) continue;
+      if (!inTable && (line.includes('──') || line.includes('--'))) continue;
       if (line.includes('项目') && line.includes('金额')) { inTable = true; html += '<table>'; }
       if (inTable) {
         const cells = line.split(/[│|]/).map(c => c.trim()).filter(c => c);
