@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>ClawDocs AI - 路演PPT</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #0f0c29; color: white; }
+  .slideshow { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+  .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px 80px; opacity: 0; transition: opacity 0.8s; }
+  .slide.active { opacity: 1; }
+  .slide-number { position: absolute; bottom: 20px; right: 30px; font-size: 14px; color: #666; }
+  
+  /* 通用 */
+  .tag { background: #7c3aed; color: white; padding: 6px 18px; border-radius: 20px; font-size: 0.85em; font-weight: 600; letter-spacing: 1px; margin-bottom: 24px; display: inline-block; }
+  h1 { font-size: 3.2em; font-weight: 800; margin-bottom: 20px; line-height: 1.2; text-align: center; }
+  h2 { font-size: 2.2em; font-weight: 700; margin-bottom: 40px; text-align: center; }
+  p { font-size: 1.3em; line-height: 1.7; color: #ccc; max-width: 800px; text-align: center; }
+  .subtitle { font-size: 1.5em; color: #a78bfa; margin-bottom: 16px; }
+  
+  /* Slide 1: 封面 */
+  .slide-cover { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); }
+  .slide-cover .logo { font-size: 3em; margin-bottom: 20px; }
+  .slide-cover h1 { font-size: 4em; background: linear-gradient(135deg, #a78bfa, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .slide-cover .slogan { font-size: 1.8em; color: #e0e0e0; margin: 20px 0; }
+  .slide-cover .meta { font-size: 1em; color: #888; margin-top: 40px; }
+  
+  /* Slide 2: 问题 */
+  .slide-problem { background: linear-gradient(135deg, #1a0a0a, #2d1b1b, #1a0a0a); }
+  .pain-points { display: flex; gap: 30px; margin-top: 30px; }
+  .pain { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 16px; padding: 28px; width: 220px; text-align: center; }
+  .pain .icon { font-size: 2.5em; margin-bottom: 12px; }
+  .pain h3 { color: #f87171; font-size: 1em; margin-bottom: 8px; }
+  .pain p { font-size: 0.85em; color: #aaa; }
+  
+  /* Slide 3: 解决方案 */
+  .slide-solution { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); }
+  .solution-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 20px; }
+  .sol { background: rgba(255,255,255,0.07); border-radius: 16px; padding: 28px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+  .sol .icon { font-size: 2.2em; margin-bottom: 12px; }
+  .sol h3 { color: #a78bfa; font-size: 1.1em; margin-bottom: 8px; }
+  .sol p { font-size: 0.85em; color: #bbb; }
+  
+  /* Slide 4: 产品 */
+  .slide-product { background: #0a0a1a; }
+  .product-demo { background: #111; border-radius: 16px; padding: 30px; border: 1px solid #333; max-width: 900px; margin-top: 10px; }
+  .demo-input { background: #1a1a2e; border-radius: 12px; padding: 16px 20px; border-left: 3px solid #7c3aed; margin-bottom: 16px; font-size: 0.95em; color: #a78bfa; }
+  .demo-output { background: #0d1117; border-radius: 12px; padding: 16px 20px; border-left: 3px solid #22c55e; font-size: 0.9em; color: #ccc; line-height: 1.7; }
+  .demo-output .label { color: #22c55e; font-weight: 600; margin-bottom: 8px; font-size: 0.8em; }
+  
+  /* Slide 5: 市场 */
+  .slide-market { background: linear-gradient(135deg, #0f0c29, #1a1040); }
+  .market-stats { display: flex; gap: 50px; margin-top: 30px; }
+  .mstat { text-align: center; }
+  .mstat .num { font-size: 3.5em; font-weight: 800; background: linear-gradient(135deg, #a78bfa, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .mstat .unit { font-size: 1.5em; font-weight: 700; }
+  .mstat .desc { font-size: 1em; color: #888; margin-top: 8px; }
+  
+  /* Slide 6: 商业模式 */
+  .slide-model { background: linear-gradient(135deg, #1a1040, #0f0c29); }
+  .biz-model { display: flex; gap: 30px; margin-top: 20px; }
+  .tier { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 28px 24px; flex: 1; border: 1px solid rgba(255,255,255,0.1); text-align: center; transition: transform 0.3s; }
+  .tier:hover { transform: translateY(-4px); }
+  .tier.popular { border-color: #7c3aed; background: rgba(124,58,237,0.1); position: relative; }
+  .tier.popular::before { content: '主推'; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #7c3aed; padding: 3px 14px; border-radius: 20px; font-size: 0.75em; }
+  .tier h3 { font-size: 1.1em; color: #ccc; margin-bottom: 10px; }
+  .tier .price { font-size: 2.2em; font-weight: 800; color: #a78bfa; }
+  .tier .period { font-size: 0.8em; color: #888; }
+  .tier ul { list-style: none; margin-top: 16px; text-align: left; }
+  .tier li { padding: 6px 0; font-size: 0.85em; color: #aaa; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  
+  /* Slide 7: 进展 */
+  .slide-progress { background: linear-gradient(135deg, #0f2027, #2c5364); }
+  .timeline { display: flex; gap: 20px; margin-top: 30px; }
+  .t { background: rgba(255,255,255,0.06); border-radius: 12px; padding: 24px; flex: 1; border-top: 3px solid #7c3aed; }
+  .t .phase { font-size: 0.8em; color: #a78bfa; font-weight: 600; margin-bottom: 6px; }
+  .t .time { font-size: 1.3em; font-weight: 700; margin-bottom: 12px; }
+  .t .goal { font-size: 0.85em; color: #ccc; line-height: 1.5; }
+  .t.done { border-top-color: #22c55e; }
+  .t.done .phase { color: #22c55e; }
+  
+  /* Slide 8: 团队 */
+  .slide-team { background: #0f0c29; }
+  .team-grid { display: flex; gap: 30px; margin-top: 30px; }
+  .member { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 28px; flex: 1; text-align: center; border: 1px solid rgba(255,255,255,0.08); }
+  .member .avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: flex; align-items: center; justify-content: center; font-size: 2em; margin: 0 auto 16px; }
+  .member h3 { font-size: 1.1em; margin-bottom: 6px; }
+  .member .role { color: #a78bfa; font-size: 0.9em; margin-bottom: 12px; }
+  .member p { font-size: 0.85em; color: #888; line-height: 1.5; }
+  
+  /* Slide 9: 融资 */
+  .slide-fund { background: linear-gradient(135deg, #1a0a2e, #0f0c29); }
+  .fund-grid { display: flex; gap: 30px; margin-top: 30px; }
+  .fund-round { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 28px; flex: 1; border: 1px solid rgba(255,255,255,0.08); text-align: center; }
+  .fund-round h3 { color: #a78bfa; font-size: 0.9em; margin-bottom: 8px; }
+  .fund-round .amount { font-size: 2.5em; font-weight: 800; color: #f0f0f0; margin-bottom: 8px; }
+  .fund-round .use { font-size: 0.85em; color: #888; line-height: 1.6; }
+  
+  /* Slide 10: CTA */
+  .slide-cta { background: linear-gradient(135deg, #302b63, #24243e, #0f0c29); }
+  .cta h1 { font-size: 3.5em; margin-bottom: 16px; }
+  .cta .contact { margin-top: 30px; font-size: 1.3em; color: #a78bfa; }
+  .cta .domain { background: rgba(124,58,237,0.15); border: 1px solid #7c3aed; border-radius: 30px; padding: 12px 32px; display: inline-block; margin-top: 16px; font-size: 1.2em; color: #a78bfa; }
+  
+  /* 导航 */
+  .nav { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 100; }
+  .nav button { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 16px; transition: all 0.3s; }
+  .nav button:hover { background: #7c3aed; border-color: #7c3aed; }
+  .progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: #7c3aed; transition: width 0.3s; z-index: 100; }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+
+<div class="slideshow" id="slideshow">
+
+  <!-- Slide 1: 封面 -->
+  <div class="slide slide-cover active" id="s1">
+    <div class="logo">🦑</div>
+    <div class="tag">种子轮融资</div>
+    <h1>ClawDocs AI</h1>
+    <div class="slogan">你的第二个脑子</div>
+    <p>用一句话需求 → 生成可直接签字的合同、报告、方案<br>帮中小企业主彻底摆脱"写文档"困境</p>
+    <div class="meta">2026年5月 · 量子文档智能有限公司</div>
+    <div class="slide-number">01 / 10</div>
+  </div>
+
+  <!-- Slide 2: 问题 -->
+  <div class="slide slide-problem" id="s2">
+    <div class="tag">市场痛点</div>
+    <h2>中小企业主每天被文档困住</h2>
+    <div class="pain-points">
+      <div class="pain">
+        <div class="icon">💸</div>
+        <h3>法务太贵</h3>
+        <p>专业律师<br>2000+/小时<br>一个合同 = 几周工资</p>
+      </div>
+      <div class="pain">
+        <div class="icon">🤖</div>
+        <h3>AI不好用</h3>
+        <p>ChatGPT写合同<br>需要大量修改<br>不懂中国法律</p>
+      </div>
+      <div class="pain">
+        <div class="icon">📝</div>
+        <h3>模板无效</h3>
+        <p>网上模板千篇一律<br>不贴合实际业务<br>改了等于重写</p>
+      </div>
+      <div class="pain">
+        <div class="icon">⏰</div>
+        <h3>时间浪费</h3>
+        <p>一个合同改5轮<br>耗时3-5天<br>核心业务没时间做</p>
+      </div>
+    </div>
+    <div class="slide-number">02 / 10</div>
+  </div>
+
+  <!-- Slide 3: 解决方案 -->
+  <div class="slide slide-solution" id="s3">
+    <div class="tag">解决方案</div>
+    <h2>一句话需求 → 直接可用的文档</h2>
+    <div class="solution-grid">
+      <div class="sol">
+        <div class="icon">🗣️</div>
+        <h3>自然语言输入</h3>
+        <p>不需要学Prompt<br>用大白话描述业务场景<br>AI自动理解意图</p>
+      </div>
+      <div class="sol">
+        <div class="icon">⚖️</div>
+        <h3>内置中国法规模板</h3>
+        <p>基于中国法律体系<br>自动覆盖核心条款<br>附带合规提示</p>
+      </div>
+      <div class="sol">
+        <div class="icon">📄</div>
+        <h3>下载即用</h3>
+        <p>生成Word/PDF文档<br>可直接打印签字<br>不需二次修改</p>
+      </div>
+      <div class="sol">
+        <div class="icon">⚡</div>
+        <h3>5秒出稿</h3>
+        <p>输入需求<br>等待5秒<br>文档到手</p>
+      </div>
+      <div class="sol">
+        <div class="icon">🎯</div>
+        <h3>10+文档类型</h3>
+        <p>合同、报告、方案<br>邮件、计划书、标书<br>一个平台全搞定</p>
+      </div>
+      <div class="sol">
+        <div class="icon">🔒</div>
+        <h3>数据安全</h3>
+        <p>用户数据仅用于处理<br>不用于AI训练<br>隐私保护优先</p>
+      </div>
+    </div>
+    <div class="slide-number">03 / 10</div>
+  </div>
+
+  <!-- Slide 4: 产品演示 -->
+  <div class="slide slide-product" id="s4">
+    <div class="tag">产品演示</div>
+    <h2>就这么简单</h2>
+    <div class="product-demo">
+      <div class="demo-input">
+        💬 我是做市场调研的，想跟客户签一份咨询服务合同，费用3万，分三期付款，首付30%
+      </div>
+      <div class="demo-output">
+        <div class="label">✓ 5秒后，生成完整合同</div>
+        <strong>咨询服务合同</strong><br><br>
+        <strong>第一条 服务内容</strong><br>
+        乙方为甲方提供市场调研相关咨询服务，包括但不限于：行业研究、竞品分析、数据报告等……<br><br>
+        <strong>第二条 费用及付款方式</strong><br>
+        总费用：人民币30,000元整<br>
+        首付30%（¥9,000）于合同签署后3个工作日内支付<br>
+        中期款30%（¥9,000）于乙方提交中期报告后3个工作日内支付<br>
+        尾款40%（¥12,000）于甲方验收合格后3个工作日内支付<br><br>
+        <strong>第三条 知识产权</strong> · <strong>第四条 保密条款</strong> · <strong>第五条 违约责任</strong>……
+      </div>
+    </div>
+    <div class="slide-number">04 / 10</div>
+  </div>
+
+  <!-- Slide 5: 市场 -->
+  <div class="slide slide-market" id="s5">
+    <div class="tag">市场规模</div>
+    <h2>巨大的未被满足的需求</h2>
+    <div class="market-stats">
+      <div class="mstat">
+        <div class="num">5000<span class="unit">万</span></div>
+        <div class="desc">中国注册企业数量<br>（2025年）</div>
+      </div>
+      <div class="mstat">
+        <div class="num">98<span class="unit">%</span></div>
+        <div class="desc">中小企业占比<br>文档需求最密集</div>
+      </div>
+      <div class="mstat">
+        <div class="num">120<span class="unit">亿</span></div>
+        <div class="desc">中国B2B SaaS市场规模<br>（2025年预测）</div>
+      </div>
+      <div class="mstat">
+        <div class="num">3<span class="unit">万</span></div>
+        <div class="desc">中小企业年均<br>文档相关支出（元）</div>
+      </div>
+    </div>
+    <div class="slide-number">05 / 10</div>
+  </div>
+
+  <!-- Slide 6: 商业模式 -->
+  <div class="slide slide-model" id="s6">
+    <div class="tag">商业模式</div>
+    <h2>简单透明的SaaS订阅</h2>
+    <div class="biz-model">
+      <div class="tier">
+        <h3>免费版</h3>
+        <div class="price">¥0<span class="period">/月</span></div>
+        <ul>
+          <li>每月5篇文档</li>
+          <li>3种文档类型</li>
+          <li>基础润色</li>
+          <li>——</li>
+        </ul>
+      </div>
+      <div class="tier popular">
+        <h3>个人版</h3>
+        <div class="price">¥49<span class="period">/月</span></div>
+        <ul>
+          <li>无限文档</li>
+          <li>全部10+文档类型</li>
+          <li>无限润色</li>
+          <li>历史记录保存</li>
+          <li>优先生成速度</li>
+        </ul>
+      </div>
+      <div class="tier">
+        <h3>团队版</h3>
+        <div class="price">¥199<span class="period">/月</span></div>
+        <ul>
+          <li>5个账号</li>
+          <li>团队文档库</li>
+          <li>API接入</li>
+          <li>自定义模板</li>
+          <li>优先客服支持</li>
+        </ul>
+      </div>
+    </div>
+    <div class="slide-number">06 / 10</div>
+  </div>
+
+  <!-- Slide 7: 进展 -->
+  <div class="slide slide-progress" id="s7">
+    <div class="tag">当前进展</div>
+    <h2>快速迭代，小步快跑</h2>
+    <div class="timeline">
+      <div class="t done">
+        <div class="phase">已完成 ✓</div>
+        <div class="time">2026年5月</div>
+        <div class="goal">产品原型完成<br>商业计划确定<br>核心功能MVP</div>
+      </div>
+      <div class="t">
+        <div class="phase">下一步</div>
+        <div class="time">2026年6月</div>
+        <div class="goal">MVP上线<br>种子用户100人<br>完成首月收入</div>
+      </div>
+      <div class="t">
+        <div class="phase">Q3目标</div>
+        <div class="time">2026年Q3</div>
+        <div class="goal">注册用户5000+<br>月活付费用户200+<br>月收入¥10,000+</div>
+      </div>
+      <div class="t">
+        <div class="phase">Q4目标</div>
+        <div class="time">2026年Q4</div>
+        <div class="goal">月收入¥3万+<br>启动种子轮融资<br>团队扩张至3人</div>
+      </div>
+    </div>
+    <div class="slide-number">07 / 10</div>
+  </div>
+
+  <!-- Slide 8: 团队 -->
+  <div class="slide slide-team" id="s8">
+    <div class="tag">核心团队</div>
+    <h2>小而精，专注执行</h2>
+    <div class="team-grid">
+      <div class="member">
+        <div class="avatar">🤖</div>
+        <h3>ClawDocs AI</h3>
+        <div class="role">CEO · AI负责人</div>
+        <p>7x24小时工作<br>无情绪波动<br>持续迭代优化<br>永远在学习</p>
+      </div>
+      <div class="member">
+        <div class="avatar">👤</div>
+        <h3>待招募</h3>
+        <div class="role">产品经理</div>
+        <p>需求洞察<br>交互设计<br>用户体验<br>数据分析</p>
+      </div>
+      <div class="member">
+        <div class="avatar">👤</div>
+        <h3>待招募</h3>
+        <div class="role">全栈工程师</div>
+        <p>前端开发<br>后端架构<br>AI模型集成<br>DevOps</p>
+      </div>
+      <div class="member">
+        <div class="avatar">👤</div>
+        <h3>待招募</h3>
+        <div class="role">增长运营</div>
+        <p>内容运营<br>用户增长<br>小红书/知乎<br>转化漏斗</p>
+      </div>
+    </div>
+    <div class="slide-number">08 / 10</div>
+  </div>
+
+  <!-- Slide 9: 融资 -->
+  <div class="slide slide-fund" id="s9">
+    <div class="tag">融资计划</div>
+    <h2>寻求种子轮融资</h2>
+    <div class="fund-grid">
+      <div class="fund-round">
+        <h3>种子轮 Seed</h3>
+        <div class="amount">¥50万</div>
+        <div class="use">团队组建<br>云服务与AI算力<br>付费推广启动<br>运营增长</div>
+      </div>
+      <div class="fund-round">
+        <h3>A轮 Series A</h3>
+        <div class="amount">¥300万</div>
+        <div class="use">团队扩张至10人<br>产品深度打磨<br>付费用户破万<br>品牌建设</div>
+      </div>
+      <div class="fund-round">
+        <h3>目标估值</h3>
+        <div class="amount">¥500万</div>
+        <div class="use">种子轮出让10%<br>Pre-money ¥450万<br>投资回报预期<br>3-5年退出</div>
+      </div>
+    </div>
+    <div class="slide-number">09 / 10</div>
+  </div>
+
+  <!-- Slide 10: CTA -->
+  <div class="slide slide-cta" id="s10">
+    <div class="logo" style="font-size:3em;margin-bottom:20px;">🦑</div>
+    <div class="tag">让我们聊聊</div>
+    <h1>一起做点<br>不一样的东西</h1>
+    <p>文档是商业的基础设施<br>不该让人花80%的时间在写文档上</p>
+    <div class="contact">📧 clawdocs.ai @ gmail.com</div>
+    <div class="domain">🌐 clawdocs.ai</div>
+    <div class="slide-number">10 / 10</div>
+  </div>
+
+</div>
+
+<div class="nav">
+  <button onclick="prevSlide()">‹</button>
+  <button onclick="nextSlide()">›</button>
+</div>
+
+<script>
+let current = 0;
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+const progress = document.getElementById('progress');
+
+function showSlide(n) {
+  if (n < 0) n = 0;
+  if (n >= total) n = total - 1;
+  slides[current].classList.remove('active');
+  slides[n].classList.add('active');
+  current = n;
+  progress.style.width = ((current + 1) / total * 100) + '%';
+}
+
+function nextSlide() { showSlide(current + 1); }
+function prevSlide() { showSlide(current - 1); }
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prevSlide(); }
+});
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.nav') && !e.target.closest('button')) {
+    const rect = document.body.getBoundingClientRect();
+    if (e.clientX > rect.width / 2) nextSlide();
+    else prevSlide();
+  }
+});
+
+progress.style.width = (1 / total * 100) + '%';
+</script>
+
+</body>
+</html>
